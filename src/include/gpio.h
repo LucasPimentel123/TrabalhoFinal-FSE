@@ -6,5 +6,6 @@ void touchSensor();
 void verificaTemperatura();
 void setSoundSensor();
 void verificaLed();
+void setLed();
 
 #endif

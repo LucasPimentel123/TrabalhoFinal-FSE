@@ -96,6 +96,10 @@ void mqtt_recebe_mensagem(char *payload)
             vTaskDelete(tidSensorSom);
         }
     }
+    else if (strcmp(method, "ligarLed") == 0)
+    {
+        setLed();
+    }
 }
 
 static void log_error_if_nonzero(const char *message, int error_code)

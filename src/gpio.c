@@ -18,6 +18,7 @@
 #define SOUND_SENSOR 23
 
 int estadoSensor = 0;
+int estadoLed = 0;
 
 void setProxSensor()
 {
@@ -103,4 +104,23 @@ void verificaTemperatura()
 
         vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
+}
+
+void setLed()
+{
+    if (estadoLed == 0)
+    {
+        estadoLed = 1;
+    }
+    else
+    {
+        estadoLed = 0;
+    }
+    gpio_set_level(LED_2, estadoLed);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    char mensagemSetLed[50];
+    sprintf(mensagemSetLed, "{\"LedDash\": %d}", estadoLed);
+    mqtt_envia_mensagem("v1/devices/me/attributes", mensagemSetLed);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
