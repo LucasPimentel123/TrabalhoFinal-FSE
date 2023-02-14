@@ -2,13 +2,13 @@ menu "Configuração do Wifi Configuration"
 
     config ESP_WIFI_SSID
         string "WiFi SSID"
-        default "VIVOFIBRA-7571"
+        default "AndroidAP6262"
         help
             Nome da rede Wifi.
     
     config ESP_WIFI_PASSWORD
         string "Senha do WiFi"
-        default "aunjxJ5uD5"
+        default "vitalobraia"
         help
             Senha do WiFi (WPA or WPA2).
 

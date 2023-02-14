@@ -106,8 +106,12 @@
 
 SemaphoreHandle_t conexaoWifiSemaphore;
 SemaphoreHandle_t conexaoMQTTSemaphore;
+SemaphoreHandle_t ledSemaphore;
 
 #define LED_4 18
+#define LED_2 16
+#define TOUCH_SENSOR 22
+#define SOUND_SENSOR 23
 
 void conectadoWifi(void *params)
 {
@@ -144,10 +148,20 @@ void app_main(void)
     esp_rom_gpio_pad_select_gpio(LED_4);
     gpio_set_direction(LED_4, GPIO_MODE_OUTPUT);
 
+    esp_rom_gpio_pad_select_gpio(LED_2);
+    gpio_set_direction(LED_2, GPIO_MODE_OUTPUT);
+
+    esp_rom_gpio_pad_select_gpio(TOUCH_SENSOR);
+    gpio_set_direction(TOUCH_SENSOR, GPIO_MODE_INPUT);
+
+    esp_rom_gpio_pad_select_gpio(SOUND_SENSOR);
+    gpio_set_direction(SOUND_SENSOR, GPIO_MODE_INPUT);
+
     conexaoWifiSemaphore = xSemaphoreCreateBinary();
     conexaoMQTTSemaphore = xSemaphoreCreateBinary();
     wifi_start();
 
     xTaskCreate(&conectadoWifi, "Conexão ao MQTT", 4096, NULL, 1, NULL);
     xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
+    // xTaskCreate(&verificaLed, "Verifica estado led", 4096, NULL, 1, NULL);
 }

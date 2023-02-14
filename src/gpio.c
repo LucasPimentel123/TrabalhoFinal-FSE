@@ -13,12 +13,19 @@
 #define ENABLE_SENSOR 19
 #define TAG "MQTT"
 #define LED_4 18
+#define TOUCH_SENSOR 22
+#define LED_2 16
+#define SOUND_SENSOR 23
 
 int estadoSensor = 0;
 
 void setProxSensor()
 {
 
+    char mensagemled[50];
+    sprintf(mensagemled, "{\"ledProxy\": %d}", 1);
+    mqtt_envia_mensagem("v1/devices/me/attributes", mensagemled);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     while (true)
     {
         if (gpio_get_level(PROXY_SENSOR) == 1)
@@ -36,32 +43,64 @@ void setProxSensor()
     }
 }
 
+void touchSensor()
+{
+    char mensagemledToque[50];
+    sprintf(mensagemledToque, "{\"ledTouch\": %d}", 1);
+    mqtt_envia_mensagem("v1/devices/me/attributes", mensagemledToque);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    while (true)
+    {
+        if (gpio_get_level(TOUCH_SENSOR) == 1)
+        {
+            gpio_set_level(LED_4, 1);
+        }
+        else
+        {
+            gpio_set_level(LED_4, 0);
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+
+void setSoundSensor()
+{
+    char mensagemledSom[50];
+    sprintf(mensagemledSom, "{\"ledSom\": %d}", 1);
+    mqtt_envia_mensagem("v1/devices/me/attributes", mensagemledSom);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    while (true)
+    {
+        if (gpio_get_level(SOUND_SENSOR) == 1)
+        {
+            gpio_set_level(LED_4, 1);
+        }
+        else
+        {
+            gpio_set_level(LED_4, 0);
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+
 void verificaTemperatura()
 {
-    // esp_rom_gpio_pad_select_gpio(TEMP_SENSOR);
-    // gpio_set_direction(TEMP_SENSOR, GPIO_MODE_INPUT);
-    // DHT11_init(TEMP_SENSOR);
+    esp_rom_gpio_pad_select_gpio(TEMP_SENSOR);
+    gpio_set_direction(TEMP_SENSOR, GPIO_MODE_INPUT);
+    DHT11_init(TEMP_SENSOR);
 
     char mensagem[50];
     char humidade_msg[50];
-    char JsonAtributos[200];
+
     while (true)
     {
-        float temperatura = 20.0 + (float)rand() / (float)(RAND_MAX / 10.0);
-        sprintf(mensagem, "{\"temperatura1\": %f}", temperatura);
+
+        sprintf(mensagem, "{\"temperatura1\": %d}", DHT11_read().temperature);
         mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
 
-        float humidade = 20.0 + (float)rand() / (float)(RAND_MAX / 80.0);
-        sprintf(humidade_msg, "{\"humidade\": %f}", humidade);
+        sprintf(humidade_msg, "{\"humidade\": %d}", DHT11_read().humidity);
         mqtt_envia_mensagem("v1/devices/me/telemetry", humidade_msg);
 
-        
-        // sprintf(mensagem, "{\"temperatura1\": %d}", DHT11_read().temperature);
-        // mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
-    // printf("Temperature is %d \n", DHT11_read().temperature);
-    // printf("Humidity is %d\n", DHT11_read().humidity);
-    // printf("Status code is %d\n", DHT11_read().status);
 }

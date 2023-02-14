@@ -26,8 +26,12 @@
 
 extern SemaphoreHandle_t conexaoMQTTSemaphore;
 esp_mqtt_client_handle_t client;
-int sensorLigado = 0;
+int sensorProxyLigado = 0;
+int sensorToqueLigado = 0;
+int sensorSomLigado = 0;
 TaskHandle_t tidSensor;
+TaskHandle_t tidSensorToque;
+TaskHandle_t tidSensorSom;
 
 void mqtt_recebe_mensagem(char *payload)
 {
@@ -39,25 +43,58 @@ void mqtt_recebe_mensagem(char *payload)
     if (strcmp(method, "ligarSensorProx") == 0)
     {
 
-        if (!sensorLigado)
+        if (!sensorProxyLigado)
         {
+
             tidSensor = xTaskCreate(&setProxSensor, "Ligar Sensor Proximidade", 4096, NULL, 1, NULL);
-            sensorLigado = 1;
+            sensorProxyLigado = 1;
         }
         else
         {
-            // terminar thread
+            sensorProxyLigado = 0;
+            char mensagemledDesliga[50];
+            sprintf(mensagemledDesliga, "{\"ledProxy\": %d}", 0);
+            mqtt_envia_mensagem("v1/devices/me/attributes", mensagemledDesliga);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
             vTaskDelete(tidSensor);
-            sensorLigado = 0;
         }
     }
-    else if (strcmp(method, "xxx") == 0)
+    else if (strcmp(method, "ligarSensorToque") == 0)
     {
-        // do something else
+        if (!sensorToqueLigado)
+        {
+            printf("%s", method);
+            tidSensorToque = xTaskCreate(&touchSensor, "Ligar Sensor Toque", 4096, NULL, 1, NULL);
+            sensorToqueLigado = 1;
+        }
+        else
+        {
+            sensorToqueLigado = 0;
+            char mensagemledToqueDesliga[50];
+            sprintf(mensagemledToqueDesliga, "{\"ledTouch\": %d}", 0);
+            mqtt_envia_mensagem("v1/devices/me/attributes", mensagemledToqueDesliga);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            vTaskDelete(tidSensorToque);
+        }
     }
-    /* more else if clauses */
-    else /* default: */
+
+    else if (strcmp(method, "ligarSensorSom") == 0)
     {
+        if (!sensorSomLigado)
+        {
+            printf("%s", method);
+            tidSensorSom = xTaskCreate(&setSoundSensor, "Ligar Sensor Som", 4096, NULL, 1, NULL);
+            sensorSomLigado = 1;
+        }
+        else
+        {
+            sensorSomLigado = 0;
+            char mensagemledSomDesliga[50];
+            sprintf(mensagemledSomDesliga, "{\"ledSom\": %d}", 0);
+            mqtt_envia_mensagem("v1/devices/me/attributes", mensagemledSomDesliga);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            vTaskDelete(tidSensorSom);
+        }
     }
 }
 
